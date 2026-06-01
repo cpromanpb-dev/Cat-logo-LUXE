@@ -500,7 +500,8 @@ function getTodayVisits() {
 trackVisit();
 
 const SHEET_ID = "1lsa8kP3rUoeDianRuahnKH1kFgk30gs5XfJJGaSF9ZU";
-const SHEET_CSV = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
+const SHEET_CSV_DIRECT = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
+const SHEET_CSV = `https://corsproxy.io/?${encodeURIComponent(SHEET_CSV_DIRECT)}`;
 const AGENTS = [
   { area: "Puebla",        tel: "522214219549" },
   { area: "Guadalajara",   tel: "525534814746" },
@@ -551,7 +552,15 @@ function parseCSV(text) {
 async function loadFromSheets() {
   setLoader(20, 'Conectando con Google Sheets...');
   try {
-    const res = await fetch(SHEET_CSV + '&t=' + Date.now());
+    // Intentar con proxy 1, si falla usar proxy 2
+    let res;
+    try {
+      res = await fetch(SHEET_CSV + '&t=' + Date.now());
+      if (!res.ok) throw new Error('proxy1 failed');
+    } catch(e1) {
+      const proxy2 = `https://api.allorigins.win/raw?url=${encodeURIComponent(SHEET_CSV_DIRECT)}`;
+      res = await fetch(proxy2);
+    }
     setLoader(60, 'Procesando inventario...');
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const text = await res.text();
