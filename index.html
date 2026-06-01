@@ -811,11 +811,25 @@ function modalWA() {
 }
 
 // ===== DASHBOARD =====
+function safeSet(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+function safeHTML(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.innerHTML = val;
+}
+
 function initDashboard() {
+  if (!stockList.length) {
+    loadFromSheets().then(() => initDashboard());
+    return;
+  }
+  try {
   const days = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
   const months = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
   const d = new Date();
-  document.getElementById('dash-date').textContent = days[d.getDay()] + ', ' + d.getDate() + ' de ' + months[d.getMonth()] + ' ' + d.getFullYear();
+  safeSet('dash-date', days[d.getDay()] + ', ' + d.getDate() + ' de ' + months[d.getMonth()] + ' ' + d.getFullYear());
 
   // KPIs dinámicos desde stockList
   const total = stockList.length;
@@ -826,55 +840,48 @@ function initDashboard() {
     : 0;
   const agotados = stockList.filter(p => !p.avail).length;
 
-  document.getElementById('kpi-total').textContent = total;
-  document.getElementById('kpi-avail-sub').textContent = agotados + ' agotados';
-  document.getElementById('kpi-avail').textContent = avail;
-  document.getElementById('kpi-avail-pct').textContent = total > 0 ? Math.round(avail/total*100) + '% del catálogo' : '—';
-  document.getElementById('kpi-cats').textContent = cats;
-  document.getElementById('kpi-avg').textContent = avgPrice > 0 ? '$' + avgPrice.toLocaleString() : '—';
+  // KPIs inventario
+  safeSet('kpi-total',    total);
+  safeSet('kpi-agotados', agotados + ' agotados');
+  safeSet('kpi-avail',    avail);
+  safeSet('kpi-avail-pct', total>0 ? Math.round(avail/total*100)+'% del catálogo' : '—');
+  safeSet('kpi-cats',     cats);
+  safeSet('kpi-avg',      avgPrice>0 ? '$'+avgPrice.toLocaleString() : '—');
 
-  // Category bars
+  // Visitas reales
+  const bySource = getVisitsBySource();
+  const visitDay = getVisitsByDay();
+  const totalV   = getTotalVisits();
+  const todayV   = getTodayVisits();
+  const waClicks = getWAClicks();
+  const totalWA  = Object.values(waClicks).reduce((a,b)=>a+b,0);
+
+  safeSet('kpi-visits-today', todayV);
+  safeSet('kpi-visits-week',  totalV);
+  safeSet('kpi-wa-total',     totalWA);
+  safeSet('kpi-conv-rate',    totalV>0 ? (totalWA/totalV*100).toFixed(1)+'%' : '0%');
+
+  // Categorías
   const catMap = {};
-  stockList.forEach(p => { catMap[p.cat] = (catMap[p.cat] || 0) + 1; });
-  const catArr = Object.entries(catMap).sort((a,b)=>b[1]-a[1]);
-  const maxCat = catArr[0]?.[1] || 1;
-  const catColors = ['#C9A84C','#a88730','#6b5520','#4a3a15','#2d240d','#1a1500'];
-  document.getElementById('cat-bars').innerHTML = catArr.map(([cat, count], i) => `
-    <div class="prod-bar-row" style="margin-bottom:10px">
-      <div class="prod-bar-info">
-        <div class="prod-bar-header">
-          <span class="prod-bar-name">${cat}</span>
-          <span class="prod-bar-stat">${count} producto${count!==1?'s':''}</span>
-        </div>
-        <div class="prod-bar-bg"><div class="prod-bar-fill" style="width:${(count/maxCat*100).toFixed(1)}%;background:${catColors[i]||'#333'}"></div></div>
+  stockList.forEach(p => { catMap[p.cat] = (catMap[p.cat]||0)+1; });
+  const catArr   = Object.entries(catMap).sort((a,b)=>b[1]-a[1]);
+  const maxCat   = catArr[0]?.[1]||1;
+  const catColors= ['#C9A84C','#a88730','#6b5520','#4a3a15','#2d240d','#1a1500'];
+  safeHTML('cat-bars', catArr.map(([cat,count],i)=>`
+    <div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px">
+        <span style="color:var(--text2)">${cat}</span>
+        <span style="color:var(--text3)">${count} producto${count!==1?'s':''}</span>
       </div>
-    </div>`).join('');
-
-  // ── Visitas reales por fuente ──────────────────────────────
-  const bySource   = getVisitsBySource();
-  const visitDay   = getVisitsByDay();
-  const totalV     = getTotalVisits();
-  const todayV     = getTodayVisits();
-  const waClicks   = getWAClicks();
-  const totalWA    = Object.values(waClicks).reduce((a,b)=>a+b,0);
-
-  // KPIs de visitas (reemplaza los de stock por los reales)
-  document.getElementById('kpi-total').textContent    = total;
-  document.getElementById('kpi-agotados').textContent = agotados + ' agotados';
-  document.getElementById('kpi-avail').textContent    = avail;
-  document.getElementById('kpi-avail-pct').textContent= total>0 ? Math.round(avail/total*100)+'% del catálogo' : '—';
-  document.getElementById('kpi-cats').textContent     = cats;
-  document.getElementById('kpi-avg').textContent      = avgPrice>0 ? '$'+avgPrice.toLocaleString() : '—';
-
-  // KPIs de tráfico
-  document.getElementById('kpi-visits-today').textContent = todayV;
-  document.getElementById('kpi-visits-week').textContent  = totalV;
-  document.getElementById('kpi-wa-total').textContent     = totalWA;
-  document.getElementById('kpi-conv-rate').textContent    = totalV>0 ? (totalWA/totalV*100).toFixed(1)+'%' : '0%';
+      <div style="height:5px;background:var(--bg4)">
+        <div style="height:5px;width:${(count/maxCat*100).toFixed(1)}%;background:${catColors[i]||'#333'}"></div>
+      </div>
+    </div>`).join(''));
 
   // ── Gráfica de línea (visitas reales por día) ──────────────
   const maxV2 = Math.max(...visitDay.map(d=>d.v), 1);
   const svg = document.getElementById('line-chart-svg');
+  if (!svg) { console.warn('line-chart-svg not found'); return; }
   const pts  = visitDay.map((d,i)=>({
     x: (i/(visitDay.length-1))*380+10,
     y: 110-(d.v/maxV2)*100,
@@ -892,7 +899,7 @@ function initDashboard() {
     <polyline points="${poly}" fill="none" stroke="#C9A84C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
     ${pts.map(p=>`<circle cx="${p.x}" cy="${p.y}" r="4" fill="#C9A84C"/>
       <text x="${p.x}" y="${p.y-8}" text-anchor="middle" font-size="9" fill="#a1a1aa">${p.v}</text>`).join('')}`;
-  document.getElementById('line-chart-labels').innerHTML = visitDay.map(d=>`<span>${d.day}</span>`).join('');
+  safeHTML('line-chart-labels', visitDay.map(d=>`<span>${d.day}</span>`).join(''));
 
   // ── Barras de fuente de tráfico (datos reales) ─────────────
   const sources = [
@@ -903,7 +910,7 @@ function initDashboard() {
   ];
   const maxSrc = Math.max(...sources.map(s=>bySource[s.key]||0), 1);
   const totalSrc = sources.reduce((a,s)=>a+(bySource[s.key]||0),0);
-  document.getElementById('traffic-bars').innerHTML = sources.map(s=>`
+  safeHTML('traffic-bars', sources.map(s=>`
     <div class="source-row">
       <div class="source-header">
         <span class="source-name">${s.name}</span>
@@ -925,7 +932,7 @@ function initDashboard() {
     { red:'TikTok',    param:'tiktok',    color:'#69C9D0', icon:'🎵' },
     { red:'Facebook',  param:'facebook',  color:'#1877F2', icon:'👥' },
   ];
-  document.getElementById('utm-links').innerHTML = utmLinks.map(u=>`
+  safeHTML('utm-links', utmLinks.map(u=>`
     <div style="margin-bottom:10px;padding:12px;background:var(--bg4);border:1px solid var(--border)">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
         <span style="font-size:12px;font-weight:700;color:${u.color}">${u.icon} ${u.red}</span>
@@ -939,22 +946,8 @@ function initDashboard() {
       </div>
     </div>`).join('');
 
-  // ── Barras de categorías ───────────────────────────────────
-  const maxCat2 = catArr[0]?.[1]||1;
-  const catColors2 = ['#C9A84C','#a88730','#6b5520','#4a3a15','#2d240d','#1a1500'];
-  document.getElementById('cat-bars').innerHTML = catArr.map(([cat,count],i)=>`
-    <div style="margin-bottom:12px">
-      <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px">
-        <span style="color:var(--text2)">${cat}</span>
-        <span style="color:var(--text3)">${count} producto${count!==1?'s':''}</span>
-      </div>
-      <div style="height:5px;background:var(--bg4)">
-        <div style="height:5px;width:${(count/maxCat2*100).toFixed(1)}%;background:${catColors2[i]||'#333'}"></div>
-      </div>
-    </div>`).join('');
-
   // ── Tabla de stock ─────────────────────────────────────────
-  document.getElementById('stock-tbody').innerHTML = stockList.map(p => {
+  safeHTML('stock-tbody', stockList.map(p => {
     const sc = p.stock===0?'td-stock-red':p.stock<=3?'td-stock-yellow':'td-stock-green';
     const icon = p.img&&!p.img.startsWith('http')?p.img:'🛍️';
     return `<tr>
@@ -968,7 +961,7 @@ function initDashboard() {
       <td><span class="${p.avail?'td-avail-yes':'td-avail-no'}">${p.avail?'✓ SI':'✗ NO'}</span></td>
       <td style="color:var(--text3);font-size:10px">${p.badge||'—'}</td>
     </tr>`;
-  }).join('');
+  }).join(''));
 
   // ── Insights dinámicos ─────────────────────────────────────
   const lowStock    = stockList.filter(p=>p.avail&&p.stock>0&&p.stock<=3);
@@ -983,7 +976,8 @@ function initDashboard() {
   if(conDescuento.length) ins+=`<p class="insight"><span>🏷️ ${conDescuento.length} productos en oferta</span> — úsalos en stories para generar urgencia.</p>`;
   if(catArr[0]) ins+=`<p class="insight"><span>📦 ${catArr[0][0]}</span> es tu categoría más grande. Publícala primero en redes.</p>`;
   if(!ins) ins='<p class="insight">Comparte los links UTM en tus redes para empezar a ver datos reales aquí.</p>';
-  document.getElementById('insights-content').innerHTML = ins;
+  safeHTML('insights-content', ins);
+  } catch(e) { console.error('Dashboard error:', e); }
 }
 
 function copyLink(url) {
