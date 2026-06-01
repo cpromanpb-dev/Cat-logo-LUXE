@@ -283,7 +283,21 @@
         <p class="modal-cat" id="modal-cat"></p>
         <h2 class="modal-title" id="modal-title"></h2>
         <div class="modal-price-row"><span class="modal-price" id="modal-price"></span><span class="modal-price-orig" id="modal-orig"></span></div>
+        <!-- Descripción técnica -->
         <p class="modal-desc" id="modal-desc"></p>
+
+        <!-- Descripción comercial -->
+        <div id="modal-desc-comercial-wrap" style="display:none;margin-bottom:14px;padding:12px 14px;background:#0d0d0d;border-left:2px solid var(--gold)">
+          <p style="font-size:9px;color:var(--gold);text-transform:uppercase;letter-spacing:.15em;margin-bottom:6px">✨ ¿Por qué este perfume?</p>
+          <p id="modal-desc-comercial" style="font-size:13px;color:var(--text2);line-height:1.6;font-style:italic"></p>
+        </div>
+
+        <!-- Notas de aroma -->
+        <div id="modal-notas-wrap" style="display:none;margin-bottom:14px">
+          <p class="modal-section-label">🌸 Notas de aroma</p>
+          <div id="modal-notas-content" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+        </div>
+
         <div id="modal-sizes-wrap" style="display:none"><p class="modal-section-label">Tallas disponibles</p><div class="chips" id="modal-sizes"></div></div>
         <div id="modal-colors-wrap" style="display:none"><p class="modal-section-label">Colores</p><div class="chips" id="modal-colors"></div></div>
         <div class="stock-row"><span class="stock-dot" id="modal-stock-dot"></span><span class="stock-text" id="modal-stock-text"></span></div>
@@ -544,6 +558,8 @@ async function loadFromSheets() {
       avail: (r.disponible || r.available || 'SI').toUpperCase() === 'SI',
       badge: r.badge || '',
       desc: r.descripcion || r.description || '',
+      descComercial: r.descripcion_comercial || '',
+      notas: r.notas_aroma || r.notas || '',
       img: r.imagen || r.image || '',
       sizes: r.tallas ? r.tallas.split('/').map(s=>s.trim()) : [],
       colors: r.colores ? r.colores.split('/').map(c=>c.trim()) : [],
@@ -716,6 +732,33 @@ function openModal(id) {
   document.getElementById('modal-price').textContent = '$' + p.price.toLocaleString() + ' MXN';
   document.getElementById('modal-orig').textContent = p.origPrice ? '$' + p.origPrice.toLocaleString() : '';
   document.getElementById('modal-desc').textContent = p.desc;
+
+  // Descripción comercial
+  const dcWrap = document.getElementById('modal-desc-comercial-wrap');
+  if (p.descComercial) {
+    dcWrap.style.display = 'block';
+    document.getElementById('modal-desc-comercial').textContent = p.descComercial;
+  } else dcWrap.style.display = 'none';
+
+  // Notas de aroma (solo perfumes o si tiene notas)
+  const notasWrap = document.getElementById('modal-notas-wrap');
+  if (p.notas) {
+    notasWrap.style.display = 'block';
+    // Formato: "Salida: Limón · Corazón: Cedro · Fondo: Sándalo"
+    // Separamos por · o por ,
+    const notasList = p.notas.split(/[·,]/).map(n => n.trim()).filter(Boolean);
+    document.getElementById('modal-notas-content').innerHTML = notasList.map(n => {
+      const isLabel = n.includes(':');
+      if (isLabel) {
+        const [label, val] = n.split(':');
+        return `<div style="background:var(--bg4);border:1px solid var(--border);padding:6px 10px;font-size:11px">
+          <span style="color:var(--gold);font-size:9px;text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:2px">${label.trim()}</span>
+          <span style="color:var(--text2)">${val ? val.trim() : ''}</span>
+        </div>`;
+      }
+      return `<span class="chip">${n}</span>`;
+    }).join('');
+  } else notasWrap.style.display = 'none';
 
   const sw = document.getElementById('modal-sizes-wrap');
   if (p.sizes && p.sizes.length) {
