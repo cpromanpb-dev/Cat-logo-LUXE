@@ -38,6 +38,11 @@
   .view-toggle button.active{background:var(--gold);color:#000}
   .view-toggle button:not(.active){background:transparent;color:var(--gold)}
   .view-toggle button:not(.active):hover{background:rgba(201,168,76,.1)}
+  .fixed-toggle{position:fixed;top:14px;right:14px;z-index:999;display:flex;gap:6px}
+  .fixed-toggle button{padding:5px 12px;font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;border:1px solid var(--gold);transition:all .15s;cursor:pointer}
+  .fixed-toggle button.active{background:var(--gold);color:#000}
+  .fixed-toggle button:not(.active){background:rgba(0,0,0,.8);color:var(--gold)}
+  .fixed-toggle button:not(.active):hover{background:rgba(201,168,76,.1)}
 
   /* SYNC BADGE */
   .sync-badge{position:fixed;bottom:90px;right:22px;z-index:50;background:var(--bg3);border:1px solid var(--border);padding:6px 12px;font-size:9px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:center;gap:6px}
@@ -201,6 +206,12 @@
 <body>
 
 <!-- LOADER -->
+<!-- TOGGLE FIJO SIEMPRE VISIBLE -->
+<div class="fixed-toggle" id="fixed-toggle">
+  <button class="active" id="btn-catalog" onclick="showView('catalog')">← Catálogo</button>
+  <button id="btn-dashboard" onclick="showView('dashboard')">Dashboard</button>
+</div>
+
 <div class="loader-overlay" id="loader">
   <div class="loader-logo">LU<span>X</span>E</div>
   <div class="loader-bar"><div class="loader-fill" id="loader-fill"></div></div>
@@ -581,6 +592,10 @@ async function loadFromSheets() {
 
     buildCategoryTabs();
     renderGrid();
+    // Si el dashboard está visible, actualizarlo con datos reales
+    if (document.getElementById('view-dashboard').classList.contains('active')) {
+      initDashboard();
+    }
     setTimeout(hideLoader, 400);
 
   } catch (err) {
@@ -620,9 +635,9 @@ function buildCategoryTabs() {
 function showView(v) {
   document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
   document.getElementById('view-' + v).classList.add('active');
-  document.querySelectorAll('.view-toggle button').forEach((b, i) => {
-    b.classList.toggle('active', (i===0&&v==='catalog')||(i===1&&v==='dashboard'));
-  });
+  document.getElementById('btn-catalog').classList.toggle('active', v==='catalog');
+  document.getElementById('btn-dashboard').classList.toggle('active', v==='dashboard');
+  document.getElementById('btn-catalog').textContent = v==='dashboard' ? '← Catálogo' : 'Catálogo';
   if (v === 'dashboard') {
     const ok = sessionStorage.getItem('luxe-auth');
     if (!ok) {
