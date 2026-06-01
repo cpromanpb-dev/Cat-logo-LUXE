@@ -44,6 +44,42 @@
   .fixed-toggle button:not(.active){background:rgba(0,0,0,.8);color:var(--gold)}
   .fixed-toggle button:not(.active):hover{background:rgba(201,168,76,.1)}
 
+  /* TICKER */
+  .ticker-wrap{width:100%;background:#0a0a0a;border-bottom:1px solid rgba(201,168,76,.2);padding:7px 0;overflow:hidden;white-space:nowrap}
+  .ticker-inner{display:inline-block;animation:ticker 30s linear infinite}
+  .ticker-inner:hover{animation-play-state:paused}
+  @keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+  .ticker-item{display:inline-block;padding:0 40px;font-size:11px;color:var(--text3);letter-spacing:.08em}
+  .ticker-item span{color:var(--gold);font-weight:700}
+
+  /* ANIMACIONES ENTRADA */
+  .card-fade{opacity:0;transform:translateY(20px);transition:opacity .5s ease,transform .5s ease}
+  .card-fade.visible{opacity:1;transform:translateY(0)}
+
+  /* BADGES MEJORADOS */
+  .badge-hot{background:linear-gradient(135deg,#ff4444,#ff8800);color:#fff}
+  .badge-limited{background:linear-gradient(135deg,#9b59b6,#3498db);color:#fff}
+
+  /* STOCK COUNTER EN CARD */
+  .card-stock-low{font-size:9px;color:#ff6b35;font-weight:700;letter-spacing:.05em;margin-top:4px;display:flex;align-items:center;gap:4px}
+  .card-stock-low::before{content:'';width:5px;height:5px;border-radius:50%;background:#ff6b35;flex-shrink:0;animation:pulse 1s infinite}
+  .card-stock-ok{font-size:9px;color:var(--text3);margin-top:4px}
+
+  /* HERO MEJORADO */
+  .hero-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.3);padding:4px 12px;font-size:9px;color:var(--gold);letter-spacing:.2em;text-transform:uppercase;margin-bottom:14px}
+  .hero-title{font-size:clamp(52px,9vw,96px);font-weight:900;line-height:.95;letter-spacing:-.03em;margin-bottom:20px}
+  .hero-title .line1{display:block;color:#fff;animation:slideUp .6s ease both}
+  .hero-title .line2{display:block;color:var(--gold);animation:slideUp .6s .15s ease both}
+  @keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+  .hero-stats{display:flex;gap:24px;margin-top:24px;flex-wrap:wrap}
+  .hero-stat{text-align:left}
+  .hero-stat-num{font-size:22px;font-weight:900;color:var(--gold)}
+  .hero-stat-label{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em}
+
+  /* CARD MEJORADA */
+  .product-card{background:var(--bg3);border:1px solid var(--border);cursor:pointer;transition:border-color .2s,transform .2s,box-shadow .2s}
+  .product-card:hover{border-color:rgba(201,168,76,.5);transform:translateY(-4px);box-shadow:0 12px 32px rgba(201,168,76,.1)}
+
   /* SYNC BADGE */
   .sync-badge{position:fixed;top:46px;right:14px;z-index:998;background:rgba(0,0,0,.85);border:1px solid var(--border);padding:4px 10px;font-size:8px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;gap:5px;border-radius:0 0 4px 4px}
   .sync-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
@@ -250,13 +286,39 @@
     </div>
   </header>
 
+  <!-- TICKER -->
+  <div class="ticker-wrap">
+    <div class="ticker-inner">
+      <span class="ticker-item">🔥 <span>NUEVOS DROPS</span> cada semana</span>
+      <span class="ticker-item">✨ <span>PERFUMES ORIGINALES</span> con garantía</span>
+      <span class="ticker-item">👟 <span>TENIS EXCLUSIVOS</span> ediciones limitadas</span>
+      <span class="ticker-item">🚚 <span>ENVÍO A DOMICILIO</span> en todo México</span>
+      <span class="ticker-item">💳 <span>PAGO FLEXIBLE</span> pregunta a tu agente</span>
+      <span class="ticker-item">⭐ <span>+500 CLIENTES</span> satisfechos</span>
+      <span class="ticker-item">🔥 <span>NUEVOS DROPS</span> cada semana</span>
+      <span class="ticker-item">✨ <span>PERFUMES ORIGINALES</span> con garantía</span>
+      <span class="ticker-item">👟 <span>TENIS EXCLUSIVOS</span> ediciones limitadas</span>
+      <span class="ticker-item">🚚 <span>ENVÍO A DOMICILIO</span> en todo México</span>
+      <span class="ticker-item">💳 <span>PAGO FLEXIBLE</span> pregunta a tu agente</span>
+      <span class="ticker-item">⭐ <span>+500 CLIENTES</span> satisfechos</span>
+    </div>
+  </div>
+
   <div class="hero">
     <div class="hero-pattern"></div>
     <div class="hero-inner">
-      <p class="hero-label">Temporada 2025</p>
-      <h1 class="hero-title">NUEVA<br><span>COLECCIÓN</span></h1>
+      <div class="hero-tag">✦ Temporada 2025 ✦</div>
+      <h1 class="hero-title">
+        <span class="line1">NUEVA</span>
+        <span class="line2">COLECCIÓN</span>
+      </h1>
       <p class="hero-desc">Moda, fragancias y accesorios de lujo accesible. Contacta a nuestro agente y recibe tu pedido en casa.</p>
       <a href="#product-grid" class="hero-cta" onclick="document.getElementById('product-grid').scrollIntoView({behavior:'smooth'});return false;">Ver Catálogo →</a>
+      <div class="hero-stats" id="hero-stats">
+        <div class="hero-stat"><div class="hero-stat-num" id="stat-prods">—</div><div class="hero-stat-label">Productos</div></div>
+        <div class="hero-stat"><div class="hero-stat-num" id="stat-cats">—</div><div class="hero-stat-label">Categorías</div></div>
+        <div class="hero-stat"><div class="hero-stat-num">3</div><div class="hero-stat-label">Zonas de entrega</div></div>
+      </div>
     </div>
   </div>
 
@@ -714,12 +776,34 @@ function renderGrid() {
     return;
   }
   const badgeClass = b => b === 'Nuevo' ? 'badge-nuevo' : b === 'Oferta' ? 'badge-oferta' : 'badge-exclusivo';
-  grid.innerHTML = filtered.map(p => `
-    <div class="product-card" onclick="openModal(${p.id})">
+  const getBadgeHTML = (p) => {
+    if (!p.badge) return '';
+    const map = {
+      'Nuevo': `<span class="badge badge-nuevo">✨ Nuevo</span>`,
+      'Oferta': `<span class="badge badge-oferta">🔥 Oferta</span>`,
+      'Exclusivo': `<span class="badge badge-exclusivo">👑 Exclusivo</span>`,
+      'Regular': ''
+    };
+    return map[p.badge] || `<span class="badge badge-nuevo">${p.badge}</span>`;
+  };
+  const getStockHTML = (p) => {
+    if (!p.avail) return '';
+    if (p.stock > 0 && p.stock <= 3) return `<p class="card-stock-low">¡Solo ${p.stock} disponibles!</p>`;
+    if (p.stock > 3 && p.stock <= 8) return `<p class="card-stock-ok">Stock: ${p.stock} piezas</p>`;
+    return '';
+  };
+  const getDiscount = (p) => {
+    if (!p.origPrice) return '';
+    const pct = Math.round((1 - p.price/p.origPrice)*100);
+    return `<span style="background:#ff4444;color:#fff;font-size:9px;font-weight:700;padding:2px 6px;margin-left:4px">-${pct}%</span>`;
+  };
+
+  grid.innerHTML = filtered.map((p,i) => `
+    <div class="product-card card-fade" onclick="openModal(${p.id})" style="transition-delay:${(i%4)*0.07}s">
       <div class="card-img">
         ${imgEl(p.img, p.name)}
-        ${p.badge ? `<span class="badge ${badgeClass(p.badge)}">${p.badge}</span>` : ''}
-        ${!p.avail ? '<div class="sold-out-overlay">Agotado</div>' : ''}
+        ${getBadgeHTML(p)}
+        ${!p.avail ? '<div class="sold-out-overlay">😔 Agotado</div>' : ''}
       </div>
       <div class="card-body">
         <p class="card-brand">${p.brand}</p>
@@ -727,12 +811,27 @@ function renderGrid() {
         <div class="card-price">
           <span class="price">$${p.price.toLocaleString()}</span>
           ${p.origPrice ? `<span class="price-orig">$${p.origPrice.toLocaleString()}</span>` : ''}
+          ${getDiscount(p)}
         </div>
+        ${getStockHTML(p)}
         <button class="card-btn" ${!p.avail?'disabled':''} onclick="event.stopPropagation();openWA('🛍️ ¡Hola! Vi el catálogo *LUXE* y quiero este producto:\n\n*${p.name}*\n💰 Precio: $${p.price.toLocaleString()} MXN\n\n¿Está disponible? ¿Hacen envíos? 🙌')">
-          ${p.avail ? 'Me interesa →' : 'Agotado'}
+          ${p.avail ? '🛒 Me interesa' : 'Agotado'}
         </button>
       </div>
     </div>`).join('');
+
+  // Animación de entrada con IntersectionObserver
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if(e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }});
+  }, {threshold: 0.1});
+  document.querySelectorAll('.card-fade').forEach(c => observer.observe(c));
+
+  // Actualizar stats del hero
+  const totalDisp = filtered.filter(p=>p.avail).length;
+  const statP = document.getElementById('stat-prods');
+  const statC = document.getElementById('stat-cats');
+  if(statP) statP.textContent = stockList.length + '+';
+  if(statC) statC.textContent = new Set(stockList.map(p=>p.cat)).size;
 }
 
 // ===== MODAL =====
