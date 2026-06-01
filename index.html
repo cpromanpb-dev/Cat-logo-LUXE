@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>LUXE — Premium Catalog</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{--gold:#C9A84C;--gold-dark:#b8943d;--bg:#000;--bg2:#0A0A0A;--bg3:#111;--bg4:#18181b;--border:#27272a;--text:#fff;--text2:#a1a1aa;--text3:#71717a;--green:#22c55e;--red:#ef4444;--wa:#25D366}
+  body{background:var(--bg);color:var(--text);font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;min-height:100vh;overflow-x:hidden}
+  button{cursor:pointer;border:none;background:none;color:inherit;font-family:inherit}
+  input,select,textarea{font-family:inherit}
+  a{color:inherit;text-decoration:none}
+
+  /* LOADER */
+  .loader-overlay{position:fixed;inset:0;background:#000;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .4s}
+  .loader-overlay.hidden{opacity:0;pointer-events:none}
+  .loader-logo{font-size:32px;font-weight:900;letter-spacing:.3em;color:#fff}
+  .loader-logo span{color:var(--gold)}
+  .loader-bar{width:160px;height:2px;background:#27272a;overflow:hidden}
+  .loader-fill{height:100%;background:var(--gold);width:0%;transition:width .3s}
+  .loader-text{font-size:10px;color:var(--text3);letter-spacing:.2em;text-transform:uppercase}
+
+  /* ERROR BANNER */
+  .error-banner{background:#7f1d1d;border:1px solid #ef4444;color:#fca5a5;font-size:12px;padding:12px 16px;text-align:center;display:none}
+
+  /* TOGGLE */
+  .view-toggle{position:fixed;top:14px;right:14px;z-index:999;display:flex;gap:8px}
+  .view-toggle button{padding:6px 14px;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;border:1px solid var(--gold);transition:all .15s}
+  .view-toggle button.active{background:var(--gold);color:#000}
+  .view-toggle button:not(.active){background:transparent;color:var(--gold)}
+  .view-toggle button:not(.active):hover{background:rgba(201,168,76,.1)}
+
+  /* SYNC BADGE */
+  .sync-badge{position:fixed;bottom:90px;right:22px;z-index:50;background:var(--bg3);border:1px solid var(--border);padding:6px 12px;font-size:9px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:center;gap:6px}
+  .sync-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+  .view{display:none}.view.active{display:block}
+  .cat-header{position:sticky;top:0;z-index:40;background:rgba(0,0,0,.95);backdrop-filter:blur(8px);border-bottom:1px solid var(--border)}
+  .cat-header-inner{max-width:1200px;margin:0 auto;padding:14px 16px;display:flex;align-items:center;justify-content:space-between}
+  .logo{font-size:22px;font-weight:900;letter-spacing:.3em}
+  .logo-sep{width:1px;height:18px;background:var(--gold);margin:0 10px}
+  .logo-sub{font-size:10px;color:var(--gold);letter-spacing:.3em;text-transform:uppercase}
+  .header-links{display:flex;gap:14px;font-size:11px;color:var(--text3)}
+  .header-links a:hover{color:var(--gold)}
+  .cat-tabs{max-width:1200px;margin:0 auto;padding:0 16px 10px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+  .cat-tabs::-webkit-scrollbar{display:none}
+  .tab-btn{flex-shrink:0;padding:5px 14px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--border);color:var(--text3);transition:all .15s;white-space:nowrap;cursor:pointer}
+  .tab-btn:hover{color:var(--text);border-color:#52525b}
+  .tab-btn.active{background:var(--gold);color:#000;border-color:var(--gold)}
+  .hero{position:relative;background:var(--bg3);border-bottom:1px solid var(--border);overflow:hidden}
+  .hero-pattern{position:absolute;inset:0;opacity:.08;background-image:repeating-linear-gradient(45deg,var(--gold) 0,var(--gold) 1px,transparent 0,transparent 50%);background-size:20px 20px}
+  .hero-inner{position:relative;max-width:1200px;margin:0 auto;padding:60px 16px 70px}
+  .hero-label{font-size:10px;color:var(--gold);letter-spacing:.4em;text-transform:uppercase;margin-bottom:12px}
+  .hero-title{font-size:clamp(42px,8vw,80px);font-weight:900;line-height:1;letter-spacing:-.02em;margin-bottom:18px}
+  .hero-title span{color:var(--gold)}
+  .hero-desc{color:var(--text2);font-size:14px;max-width:380px;margin-bottom:28px;line-height:1.6}
+  .hero-cta{display:inline-flex;align-items:center;gap:8px;background:var(--gold);color:#000;padding:12px 28px;font-size:12px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;transition:background .15s}
+  .hero-cta:hover{background:var(--gold-dark)}
+  .filters{max-width:1200px;margin:0 auto;padding:10px 16px;display:flex;flex-wrap:wrap;gap:16px;align-items:center;border-bottom:1px solid var(--border)}
+  .filter-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em}
+  .filter-range{accent-color:var(--gold);width:100px}
+  .filter-price-val{font-size:11px;color:var(--gold);font-weight:700;min-width:72px}
+  .filter-check{accent-color:var(--gold)}
+  .filter-check-label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.1em;cursor:pointer}
+  .product-count{margin-left:auto;font-size:11px;color:var(--text3)}
+  .product-grid{max-width:1200px;margin:0 auto;padding:24px 16px 100px;display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  @media(min-width:640px){.product-grid{grid-template-columns:repeat(3,1fr)}}
+  @media(min-width:1024px){.product-grid{grid-template-columns:repeat(4,1fr)}}
+  .product-card{background:var(--bg3);border:1px solid var(--border);cursor:pointer;transition:border-color .2s,transform .2s}
+  .product-card:hover{border-color:rgba(201,168,76,.4);transform:translateY(-2px)}
+  .card-img{position:relative;aspect-ratio:1;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:64px;overflow:hidden}
+  .card-img img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
+  .product-card:hover .card-img img{transform:scale(1.05)}
+  .card-img-emoji{font-size:64px;transition:font-size .3s}
+  .product-card:hover .card-img-emoji{font-size:72px}
+  .badge{position:absolute;top:8px;left:8px;font-size:9px;font-weight:700;padding:3px 7px;letter-spacing:.1em;text-transform:uppercase;z-index:2}
+  .badge-nuevo{background:#fff;color:#000}.badge-oferta{background:var(--gold);color:#000}.badge-exclusivo{background:var(--bg3);color:var(--gold);border:1px solid rgba(201,168,76,.4)}
+  .sold-out-overlay{position:absolute;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--text3);z-index:1}
+  .card-body{padding:12px}
+  .card-brand{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.15em;margin-bottom:3px}
+  .card-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .card-price{display:flex;align-items:baseline;gap:6px}
+  .price{color:var(--gold);font-weight:700;font-size:13px}.price-orig{color:var(--text3);font-size:11px;text-decoration:line-through}
+  .card-btn{margin-top:10px;width:100%;padding:7px 0;font-size:9px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;border:1px solid rgba(201,168,76,.5);color:var(--gold);transition:all .15s;cursor:pointer}
+  .card-btn:hover:not(:disabled){background:var(--gold);color:#000}
+  .card-btn:disabled{border-color:var(--border);color:var(--text3);cursor:not-allowed}
+  .wa-float{position:fixed;bottom:22px;right:22px;z-index:50;width:54px;height:54px;background:var(--wa);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 32px rgba(37,211,102,.4);transition:transform .15s}
+  .wa-float:hover{transform:scale(1.1)}.wa-float svg{width:28px;height:28px;fill:white}
+  .empty{text-align:center;padding:80px 16px;color:var(--text3)}.empty-icon{font-size:48px;margin-bottom:12px}
+  .modal-overlay{position:fixed;inset:0;z-index:100;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.8);backdrop-filter:blur(4px)}
+  @media(min-width:640px){.modal-overlay{align-items:center}}
+  .modal{position:relative;width:100%;max-width:480px;background:var(--bg3);border:1px solid var(--border);max-height:90vh;overflow-y:auto}
+  @media(min-width:640px){.modal{margin:16px}}
+  .modal-close{position:absolute;top:10px;right:12px;font-size:24px;line-height:1;color:var(--text3);z-index:10;background:none;border:none;cursor:pointer}
+  .modal-close:hover{color:var(--text)}
+  .modal-img{position:relative;height:240px;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:100px;overflow:hidden}
+  .modal-img img{width:100%;height:100%;object-fit:cover}
+  .modal-discount{position:absolute;top:10px;right:36px;background:#dc2626;color:#fff;font-size:9px;font-weight:700;padding:3px 7px;z-index:2}
+  .modal-body{padding:18px}
+  .modal-cat{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.15em;margin-bottom:4px}
+  .modal-title{font-size:20px;font-weight:900;margin-bottom:12px;line-height:1.2}
+  .modal-price-row{display:flex;align-items:baseline;gap:10px;margin-bottom:14px}
+  .modal-price{font-size:24px;font-weight:900;color:var(--gold)}.modal-price-orig{font-size:13px;color:var(--text3);text-decoration:line-through}
+  .modal-desc{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:14px}
+  .modal-section-label{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.15em;margin-bottom:8px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+  .chip{padding:4px 10px;border:1px solid var(--border);font-size:11px;color:var(--text2);cursor:pointer;transition:all .15s}
+  .chip:hover{border-color:var(--gold);color:var(--gold)}
+  .stock-row{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--bg4);border:1px solid var(--border);margin-bottom:16px}
+  .stock-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}.stock-dot.avail{background:var(--green)}.stock-dot.sold{background:var(--red)}
+  .stock-text{font-size:11px;color:var(--text2)}
+  .modal-wa-btn{width:100%;padding:14px;font-size:12px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:10px;transition:background .15s;cursor:pointer;border:none}
+  .modal-wa-btn.avail{background:var(--wa);color:#fff}.modal-wa-btn.avail:hover{background:#1fb557}
+  .modal-wa-btn:disabled{background:var(--bg4);color:var(--text3);cursor:not-allowed}
+  .modal-wa-btn svg{width:20px;height:20px;fill:currentColor;flex-shrink:0}
+
+  /* DASHBOARD */
+  .dash{background:var(--bg2);min-height:100vh;padding-top:56px;padding-bottom:64px}
+  .dash-inner{max-width:1140px;margin:0 auto;padding:28px 16px}
+  .dash-label{font-size:9px;color:var(--gold);letter-spacing:.4em;text-transform:uppercase;margin-bottom:4px}
+  .dash-title{font-size:28px;font-weight:900;letter-spacing:-.02em}
+  .dash-date{font-size:12px;color:var(--text3);margin-top:4px;margin-bottom:28px}
+  .kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:24px}
+  @media(min-width:768px){.kpi-grid{grid-template-columns:repeat(4,1fr)}}
+  .kpi-card{background:var(--bg3);border:1px solid var(--border);padding:14px}
+  .kpi-label{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.15em;margin-bottom:8px}
+  .kpi-val{font-size:26px;font-weight:900;color:var(--text)}.kpi-sub{font-size:10px;color:var(--text3);margin-top:4px}.kpi-trend{font-size:10px;color:var(--green);margin-top:3px}
+  .charts-row{display:grid;gap:12px;margin-bottom:24px}
+  @media(min-width:768px){.charts-row{grid-template-columns:2fr 1fr}}
+  .chart-card{background:var(--bg3);border:1px solid var(--border);padding:18px}
+  .chart-title-sm{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.15em;margin-bottom:2px}
+  .chart-title{font-size:16px;font-weight:700;margin-bottom:18px}
+  .line-chart-svg{width:100%;height:120px}
+  .line-chart-labels{display:flex;justify-content:space-between;margin-top:6px;padding:0 4px}
+  .line-chart-labels span{font-size:9px;color:var(--text3);text-align:center;flex:1}
+  .source-row{margin-bottom:14px}.source-header{display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px}
+  .source-name{color:var(--text2)}.source-bar-bg{height:5px;background:var(--bg4);width:100%}.source-bar-fill{height:5px;transition:width .5s}
+  .source-total-row{margin-top:14px;padding-top:12px;border-top:1px solid var(--border)}
+  .source-total-label{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.15em;margin-bottom:4px}
+  .source-total-val{font-size:24px;font-weight:900;color:var(--gold)}
+  .prod-bars-card{background:var(--bg3);border:1px solid var(--border);padding:18px;margin-bottom:24px}
+  .prod-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .prod-bar-emoji{font-size:20px;width:28px;text-align:center}
+  .prod-bar-info{flex:1;min-width:0}
+  .prod-bar-header{display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px}
+  .prod-bar-name{color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px}
+  .prod-bar-stat{color:var(--text3);flex-shrink:0;margin-left:8px}
+  .prod-bar-bg{height:5px;background:var(--bg4);width:100%}.prod-bar-fill{height:5px}
+  .stock-card{background:var(--bg3);border:1px solid var(--border);padding:18px;margin-bottom:20px}
+  .stock-card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;gap:12px}
+  .sheets-link{font-size:10px;color:var(--gold);text-decoration:none;display:flex;align-items:center;gap:5px;padding:6px 10px;border:1px solid rgba(201,168,76,.3);transition:all .15s;white-space:nowrap}
+  .sheets-link:hover{background:rgba(201,168,76,.1)}
+  table{width:100%;border-collapse:collapse;font-size:11px}
+  thead th{text-align:left;color:var(--text3);text-transform:uppercase;letter-spacing:.12em;font-weight:400;padding-bottom:10px;padding-right:12px;border-bottom:1px solid var(--border);white-space:nowrap}
+  tbody tr{border-bottom:1px solid rgba(39,39,42,.5);transition:background .15s}
+  tbody tr:hover{background:rgba(255,255,255,.02)}
+  tbody td{padding:10px 12px 10px 0;vertical-align:middle}
+  .td-product{display:flex;align-items:center;gap:8px}.td-emoji{font-size:18px}
+  .td-name{color:var(--text);font-weight:500;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .td-brand{color:var(--text3);font-size:10px}.td-price{color:var(--gold);font-weight:700}
+  .td-stock-green{color:var(--green);font-weight:700}.td-stock-yellow{color:#eab308;font-weight:700}.td-stock-red{color:var(--red);font-weight:700}
+  .td-avail-yes{color:var(--green);font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.1em}
+  .td-avail-no{color:var(--red);font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.1em}
+  .refresh-btn{padding:5px 12px;border:1px solid var(--border);color:var(--text3);font-size:10px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .15s;background:none}
+  .refresh-btn:hover{border-color:var(--gold);color:var(--gold)}
+  .insights-card{background:var(--bg3);border:1px solid rgba(201,168,76,.2);padding:18px}
+  .insights-title{font-size:10px;color:var(--gold);text-transform:uppercase;letter-spacing:.15em;margin-bottom:12px}
+  .insight{font-size:13px;color:var(--text2);margin-bottom:8px;line-height:1.5}
+  .insight span{color:var(--gold);font-weight:700}
+  .sheets-info{background:var(--bg3);border:1px solid rgba(201,168,76,.15);padding:14px;margin-bottom:20px;display:flex;align-items:flex-start;gap:10px}
+  .sheets-info-icon{font-size:18px;flex-shrink:0;margin-top:2px}
+  .sheets-info-text{font-size:11px;color:var(--text2);line-height:1.5}
+  .sheets-info-text strong{color:var(--gold)}
+</style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div class="loader-overlay" id="loader">
+  <div class="loader-logo">LU<span>X</span>E</div>
+  <div class="loader-bar"><div class="loader-fill" id="loader-fill"></div></div>
+  <div class="loader-text" id="loader-text">Conectando con inventario...</div>
+</div>
+
+<!-- ERROR -->
+<div class="error-banner" id="error-banner">
+  ⚠️ No se pudo cargar el inventario desde Google Sheets. Verifica que la hoja esté publicada públicamente.
+</div>
+
+<!-- TOGGLE -->
+<div class="view-toggle">
+  <button class="active" onclick="showView('catalog')">Catálogo</button>
+  <button onclick="showView('dashboard')">Dashboard</button>
+</div>
+
+<!-- SYNC BADGE -->
+<div class="sync-badge" id="sync-badge" style="display:none">
+  <span class="sync-dot"></span>
+  <span id="sync-time">En vivo</span>
+</div>
+
+<!-- ========== CATALOG ========== -->
+<div id="view-catalog" class="view active">
+  <header class="cat-header">
+    <div class="cat-header-inner">
+      <div style="display:flex;align-items:center">
+        <span class="logo">LUXE</span>
+        <span class="logo-sep"></span>
+        <span class="logo-sub">Premium Catalog</span>
+      </div>
+      <div class="header-links">
+        <a href="https://instagram.com" target="_blank">Instagram</a>
+        <a href="https://tiktok.com" target="_blank">TikTok</a>
+        <a href="https://facebook.com" target="_blank">Facebook</a>
+      </div>
+    </div>
+    <div class="cat-tabs" id="cat-tabs">
+      <button class="tab-btn active" onclick="filterCat('Todos',this)">Todos</button>
+    </div>
+  </header>
+
+  <div class="hero">
+    <div class="hero-pattern"></div>
+    <div class="hero-inner">
+      <p class="hero-label">Temporada 2025</p>
+      <h1 class="hero-title">NUEVA<br><span>COLECCIÓN</span></h1>
+      <p class="hero-desc">Moda, fragancias y accesorios de lujo accesible. Contacta a nuestro agente y recibe tu pedido en casa.</p>
+      <a href="#" class="hero-cta" onclick="return openWA('¡Hola! Vengo del catálogo LUXE y quiero ver las ofertas disponibles.')">Ver Ofertas →</a>
+    </div>
+  </div>
+
+  <div class="filters">
+    <span class="filter-label">Precio máx:</span>
+    <input type="range" class="filter-range" min="0" max="10000" step="100" value="10000" id="price-range" oninput="updateFilters()">
+    <span class="filter-price-val" id="price-display">$10,000</span>
+    <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+      <input type="checkbox" class="filter-check" id="avail-check" onchange="updateFilters()">
+      <span class="filter-check-label">Solo disponibles</span>
+    </label>
+    <span class="product-count" id="prod-count">— productos</span>
+  </div>
+
+  <div class="product-grid" id="product-grid">
+    <div class="empty" style="grid-column:1/-1"><div class="empty-icon">⏳</div><p style="font-size:12px;letter-spacing:.1em">Cargando productos...</p></div>
+  </div>
+
+  <a class="wa-float" href="#" onclick="return openWA('¡Hola! Vengo del catálogo LUXE y quiero información sobre sus productos.')" title="Contactar agente">
+    <svg viewBox="0 0 32 32"><path d="M16 3C9.373 3 4 8.373 4 15c0 2.385.832 4.58 2.21 6.348L4.5 28l6.84-1.695A11.94 11.94 0 0016 27c6.627 0 12-5.373 12-12S22.627 3 16 3zm5.894 16.687c-.248.697-1.455 1.37-1.98 1.41-.527.04-1.043.198-3.522-.733-3.01-1.124-4.935-4.116-5.085-4.307-.15-.19-1.224-1.63-1.224-3.11 0-1.48.776-2.206 1.051-2.505.275-.3.6-.375.8-.375s.4.003.575.01c.184.008.43-.07.673.514.248.597.843 2.057.917 2.207.073.15.122.325.024.524-.099.2-.148.324-.297.5-.148.174-.312.39-.445.523-.148.148-.302.31-.13.608.173.3.77 1.27 1.653 2.058 1.136 1.012 2.095 1.326 2.393 1.474.3.148.474.124.648-.075.174-.2.744-.868.942-1.167.198-.3.397-.249.673-.15.275.1 1.748.824 2.047.974.3.15.499.224.573.35.074.124.074.72-.173 1.417z"/></svg>
+  </a>
+
+  <!-- Modal -->
+  <div class="modal-overlay" id="product-modal" style="display:none" onclick="closeModal(event)">
+    <div class="modal">
+      <button class="modal-close" onclick="closeModal()">×</button>
+      <div class="modal-img" id="modal-img"></div>
+      <div class="modal-body">
+        <p class="modal-cat" id="modal-cat"></p>
+        <h2 class="modal-title" id="modal-title"></h2>
+        <div class="modal-price-row"><span class="modal-price" id="modal-price"></span><span class="modal-price-orig" id="modal-orig"></span></div>
+        <p class="modal-desc" id="modal-desc"></p>
+        <div id="modal-sizes-wrap" style="display:none"><p class="modal-section-label">Tallas disponibles</p><div class="chips" id="modal-sizes"></div></div>
+        <div id="modal-colors-wrap" style="display:none"><p class="modal-section-label">Colores</p><div class="chips" id="modal-colors"></div></div>
+        <div class="stock-row"><span class="stock-dot" id="modal-stock-dot"></span><span class="stock-text" id="modal-stock-text"></span></div>
+        <button class="modal-wa-btn" id="modal-wa-btn" onclick="modalWA()">
+          <svg viewBox="0 0 32 32"><path d="M16 3C9.373 3 4 8.373 4 15c0 2.385.832 4.58 2.21 6.348L4.5 28l6.84-1.695A11.94 11.94 0 0016 27c6.627 0 12-5.373 12-12S22.627 3 16 3zm5.894 16.687c-.248.697-1.455 1.37-1.98 1.41-.527.04-1.043.198-3.522-.733-3.01-1.124-4.935-4.116-5.085-4.307-.15-.19-1.224-1.63-1.224-3.11 0-1.48.776-2.206 1.051-2.505.275-.3.6-.375.8-.375s.4.003.575.01c.184.008.43-.07.673.514.248.597.843 2.057.917 2.207.073.15.122.325.024.524-.099.2-.148.324-.297.5-.148.174-.312.39-.445.523-.148.148-.302.31-.13.608.173.3.77 1.27 1.653 2.058 1.136 1.012 2.095 1.326 2.393 1.474.3.148.474.124.648-.075.174-.2.744-.868.942-1.167.198-.3.397-.249.673-.15.275.1 1.748.824 2.047.974.3.15.499.224.573.35.074.124.074.72-.173 1.417z"/></svg>
+          <span id="modal-wa-text">Quiero este → Contactar Agente</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== DASHBOARD ========== -->
+<div id="view-dashboard" class="view">
+  <div class="dash">
+    <div class="dash-inner">
+      <p class="dash-label">Panel de Control</p>
+      <h1 class="dash-title">LUXE Dashboard</h1>
+      <p class="dash-date" id="dash-date"></p>
+
+      <!-- Sheets info -->
+      <div class="sheets-info">
+        <span class="sheets-info-icon">📊</span>
+        <div class="sheets-info-text">
+          Inventario conectado a <strong>Google Sheets en tiempo real</strong>. Para actualizar productos, precios o stock edita directamente la hoja y recarga la página. Los cambios se reflejan en segundos.
+          <br><br>
+          <a href="https://docs.google.com/spreadsheets/d/1lsa8kP3rUoeDianRuahnKH1kFgk30gs5XfJJGaSF9ZU/edit" target="_blank" style="color:var(--gold)">→ Abrir Google Sheets para editar</a>
+        </div>
+      </div>
+
+      <!-- KPIs dinámicos -->
+      <div class="kpi-grid">
+        <div class="kpi-card"><p class="kpi-label">Total productos</p><p class="kpi-val" id="kpi-total">—</p><p class="kpi-sub" id="kpi-avail-sub">cargando...</p></div>
+        <div class="kpi-card"><p class="kpi-label">Disponibles</p><p class="kpi-val" id="kpi-avail">—</p><p class="kpi-sub">en stock activo</p><p class="kpi-trend" id="kpi-avail-pct">—</p></div>
+        <div class="kpi-card"><p class="kpi-label">Categorías</p><p class="kpi-val" id="kpi-cats">—</p><p class="kpi-sub">tipos de producto</p></div>
+        <div class="kpi-card"><p class="kpi-label">Precio promedio</p><p class="kpi-val" id="kpi-avg">—</p><p class="kpi-sub">productos disponibles</p></div>
+      </div>
+
+      <!-- Charts -->
+      <div class="charts-row">
+        <div class="chart-card">
+          <p class="chart-title-sm">Stock por categoría</p>
+          <p class="chart-title">Distribución del inventario</p>
+          <div id="cat-bars"></div>
+        </div>
+        <div class="chart-card">
+          <p class="chart-title-sm">Fuentes de tráfico</p>
+          <p class="chart-title">Por red social</p>
+          <div class="source-row"><div class="source-header"><span class="source-name">Instagram</span><span style="color:#E1306C;font-weight:700">89</span></div><div class="source-bar-bg"><div class="source-bar-fill" style="width:100%;background:#E1306C"></div></div></div>
+          <div class="source-row"><div class="source-header"><span class="source-name">TikTok</span><span style="color:#69C9D0;font-weight:700">61</span></div><div class="source-bar-bg"><div class="source-bar-fill" style="width:69%;background:#69C9D0"></div></div></div>
+          <div class="source-row"><div class="source-header"><span class="source-name">Facebook</span><span style="color:#1877F2;font-weight:700">34</span></div><div class="source-bar-bg"><div class="source-bar-fill" style="width:38%;background:#1877F2"></div></div></div>
+          <div class="source-row"><div class="source-header"><span class="source-name">Directo</span><span style="color:var(--gold);font-weight:700">28</span></div><div class="source-bar-bg"><div class="source-bar-fill" style="width:31%;background:var(--gold)"></div></div></div>
+          <div class="source-total-row"><p class="source-total-label">Total referidos</p><p class="source-total-val">212</p></div>
+        </div>
+      </div>
+
+      <!-- Stock Table -->
+      <div class="stock-card">
+        <div class="stock-card-header">
+          <div>
+            <p class="chart-title-sm">Inventario en tiempo real</p>
+            <p class="chart-title" style="margin-bottom:0">Desde Google Sheets</p>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <button class="refresh-btn" onclick="loadFromSheets()">↻ Recargar</button>
+            <a class="sheets-link" href="https://docs.google.com/spreadsheets/d/1lsa8kP3rUoeDianRuahnKH1kFgk30gs5XfJJGaSF9ZU/edit" target="_blank">
+              ✏️ Editar Sheets
+            </a>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>Producto</th><th>Marca</th><th>Categoría</th><th>Precio</th><th>P. Original</th><th>Stock</th><th>Estado</th><th>Badge</th></tr></thead>
+            <tbody id="stock-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Insights -->
+      <div class="insights-card">
+        <p class="insights-title">💡 Insights de tu catálogo</p>
+        <div id="insights-content"><p class="insight">Cargando análisis...</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// =============================================
+// CONFIGURACIÓN — Solo edita esta sección
+// =============================================
+const SHEET_ID = "1lsa8kP3rUoeDianRuahnKH1kFgk30gs5XfJJGaSF9ZU";
+const AGENT_WA = "5215512345678"; // Cambia por tu número real
+const SHEET_CSV = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
+// =============================================
+
+let stockList = [];
+let activeCat = "Todos";
+let maxPrice = 10000;
+let onlyAvail = false;
+let currentProduct = null;
+let lastSync = null;
+
+// ===== LOADER =====
+function setLoader(pct, text) {
+  document.getElementById('loader-fill').style.width = pct + '%';
+  document.getElementById('loader-text').textContent = text;
+}
+function hideLoader() {
+  const l = document.getElementById('loader');
+  l.classList.add('hidden');
+  setTimeout(() => l.style.display = 'none', 500);
+}
+
+// ===== CSV PARSER =====
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g,''));
+  return lines.slice(1).map(line => {
+    // Handle quoted fields with commas inside
+    const fields = [];
+    let cur = '', inQ = false;
+    for (let c of line) {
+      if (c === '"') { inQ = !inQ; }
+      else if (c === ',' && !inQ) { fields.push(cur.trim()); cur = ''; }
+      else { cur += c; }
+    }
+    fields.push(cur.trim());
+    const obj = {};
+    headers.forEach((h, i) => { obj[h] = (fields[i] || '').replace(/^"|"$/g,'').trim(); });
+    return obj;
+  }).filter(r => r.nombre || r.name); // Skip empty rows
+}
+
+// ===== LOAD FROM SHEETS =====
+async function loadFromSheets() {
+  setLoader(20, 'Conectando con Google Sheets...');
+  try {
+    const res = await fetch(SHEET_CSV + '&t=' + Date.now());
+    setLoader(60, 'Procesando inventario...');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const text = await res.text();
+    const rows = parseCSV(text);
+    if (!rows.length) throw new Error('Hoja vacía o sin datos');
+
+    stockList = rows.map((r, i) => ({
+      id: i + 1,
+      name: r.nombre || r.name || 'Producto sin nombre',
+      brand: r.marca || r.brand || 'LUXE',
+      price: parseFloat((r.precio || r.price || '0').replace(/[^0-9.]/g,'')) || 0,
+      origPrice: parseFloat((r.precio_original || r.original_price || '').replace(/[^0-9.]/g,'')) || 0,
+      cat: r.categoria || r.category || 'General',
+      stock: parseInt(r.stock || '0') || 0,
+      avail: (r.disponible || r.available || 'SI').toUpperCase() === 'SI',
+      badge: r.badge || '',
+      desc: r.descripcion || r.description || '',
+      img: r.imagen || r.image || '',
+      sizes: r.tallas ? r.tallas.split('/').map(s=>s.trim()) : [],
+      colors: r.colores ? r.colores.split('/').map(c=>c.trim()) : [],
+    }));
+
+    setLoader(100, '¡Listo!');
+    lastSync = new Date();
+    document.getElementById('error-banner').style.display = 'none';
+    document.getElementById('sync-badge').style.display = 'flex';
+    document.getElementById('sync-time').textContent = 'Actualizado ' + lastSync.toLocaleTimeString('es-MX', {hour:'2-digit',minute:'2-digit'});
+
+    // Update price range max
+    const maxP = Math.max(...stockList.map(p => p.price), 1000);
+    const rangeEl = document.getElementById('price-range');
+    rangeEl.max = Math.ceil(maxP / 1000) * 1000;
+    rangeEl.value = rangeEl.max;
+    maxPrice = parseInt(rangeEl.max);
+    document.getElementById('price-display').textContent = '$' + maxPrice.toLocaleString();
+
+    buildCategoryTabs();
+    renderGrid();
+    setTimeout(hideLoader, 400);
+
+  } catch (err) {
+    console.error('Sheets error:', err);
+    setLoader(100, 'Error de conexión');
+    document.getElementById('error-banner').style.display = 'block';
+    document.getElementById('error-banner').textContent =
+      '⚠️ No se pudo cargar el inventario. Asegúrate de publicar la hoja como CSV (Archivo → Publicar en la web → CSV). Error: ' + err.message;
+    // Load demo data as fallback
+    loadDemoData();
+    setTimeout(hideLoader, 800);
+  }
+}
+
+function loadDemoData() {
+  stockList = [
+    {id:1,name:"Bleu de Chanel EDP",brand:"Chanel",price:3200,origPrice:0,cat:"Perfumes",badge:"Exclusivo",avail:true,stock:5,desc:"Fragancia masculina fresca y amaderada. 100ml EDP.",img:"🫧",sizes:[],colors:[]},
+    {id:2,name:"Air Jordan 1 Retro High",brand:"Nike",price:4500,origPrice:5200,cat:"Tenis",badge:"Oferta",avail:true,stock:3,desc:"Icónica silueta Chicago. Cuero premium, suela Air.",img:"👟",sizes:["25","26","27","28"],colors:["Rojo/Negro"]},
+    {id:3,name:"Oversized Hoodie",brand:"Off-White",price:2800,origPrice:0,cat:"Ropa",badge:"Nuevo",avail:true,stock:8,desc:"Sudadera oversize algodón 400g. Unisex.",img:"🧥",sizes:["S","M","L","XL"],colors:["Negro","Crema"]},
+    {id:4,name:"Mini Bucket Bag",brand:"Guess",price:1850,origPrice:2200,cat:"Bolsas",badge:"Oferta",avail:true,stock:4,desc:"Piel sintética texturizada, cierre magnético.",img:"👜",sizes:[],colors:["Negro","Café"]},
+    {id:5,name:"Royal Oak Style",brand:"Audemars Lab",price:6500,origPrice:0,cat:"Accesorios",badge:"Exclusivo",avail:true,stock:2,desc:"Acero 316L, cristal zafiro, resistente 50m.",img:"⌚",sizes:[],colors:[]},
+  ];
+  buildCategoryTabs();
+  renderGrid();
+}
+
+// ===== CATEGORY TABS =====
+function buildCategoryTabs() {
+  const cats = ['Todos', ...new Set(stockList.map(p => p.cat))];
+  const tabsEl = document.getElementById('cat-tabs');
+  tabsEl.innerHTML = cats.map((c, i) =>
+    `<button class="tab-btn${i===0?' active':''}" onclick="filterCat('${c}',this)">${c}</button>`
+  ).join('');
+}
+
+// ===== VIEWS =====
+function showView(v) {
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+  document.getElementById('view-' + v).classList.add('active');
+  document.querySelectorAll('.view-toggle button').forEach((b, i) => {
+    b.classList.toggle('active', (i===0&&v==='catalog')||(i===1&&v==='dashboard'));
+  });
+  if (v === 'dashboard') initDashboard();
+}
+
+// ===== CATALOG =====
+function openWA(msg) {
+  window.open('https://wa.me/' + AGENT_WA + '?text=' + encodeURIComponent(msg), '_blank');
+  return false;
+}
+function filterCat(cat, btn) {
+  activeCat = cat;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderGrid();
+}
+function updateFilters() {
+  maxPrice = parseInt(document.getElementById('price-range').value);
+  onlyAvail = document.getElementById('avail-check').checked;
+  document.getElementById('price-display').textContent = '$' + maxPrice.toLocaleString();
+  renderGrid();
+}
+
+function imgEl(img, name) {
+  if (!img) return `<span class="card-img-emoji">🛍️</span>`;
+  // URL de imagen real
+  if (img.startsWith('http')) return `<img src="${img}" alt="${name}" onerror="this.style.display='none';this.nextSibling.style.display='block'"><span class="card-img-emoji" style="display:none">🛍️</span>`;
+  // Emoji
+  return `<span class="card-img-emoji">${img}</span>`;
+}
+
+function renderGrid() {
+  const filtered = stockList.filter(p => {
+    const mc = activeCat === 'Todos' || p.cat === activeCat;
+    const mp = p.price <= maxPrice;
+    const ma = !onlyAvail || p.avail;
+    return mc && mp && ma;
+  });
+  document.getElementById('prod-count').textContent = filtered.length + ' productos';
+  const grid = document.getElementById('product-grid');
+  if (!filtered.length) {
+    grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🔍</div><p style="font-size:12px;letter-spacing:.1em">Sin resultados</p></div>';
+    return;
+  }
+  const badgeClass = b => b === 'Nuevo' ? 'badge-nuevo' : b === 'Oferta' ? 'badge-oferta' : 'badge-exclusivo';
+  grid.innerHTML = filtered.map(p => `
+    <div class="product-card" onclick="openModal(${p.id})">
+      <div class="card-img">
+        ${imgEl(p.img, p.name)}
+        ${p.badge ? `<span class="badge ${badgeClass(p.badge)}">${p.badge}</span>` : ''}
+        ${!p.avail ? '<div class="sold-out-overlay">Agotado</div>' : ''}
+      </div>
+      <div class="card-body">
+        <p class="card-brand">${p.brand}</p>
+        <p class="card-name">${p.name}</p>
+        <div class="card-price">
+          <span class="price">$${p.price.toLocaleString()}</span>
+          ${p.origPrice ? `<span class="price-orig">$${p.origPrice.toLocaleString()}</span>` : ''}
+        </div>
+        <button class="card-btn" ${!p.avail?'disabled':''} onclick="event.stopPropagation();openWA('Hola! Vi el catálogo LUXE y me interesa: *${p.name}* ($${p.price.toLocaleString()} MXN). ¿Está disponible?')">
+          ${p.avail ? 'Me interesa →' : 'Agotado'}
+        </button>
+      </div>
+    </div>`).join('');
+}
+
+// ===== MODAL =====
+function openModal(id) {
+  currentProduct = stockList.find(p => p.id === id);
+  if (!currentProduct) return;
+  const p = currentProduct;
+  const bc = p.badge === 'Nuevo' ? 'badge-nuevo' : p.badge === 'Oferta' ? 'badge-oferta' : 'badge-exclusivo';
+
+  // Modal image
+  let imgHtml = '';
+  if (p.img && p.img.startsWith('http')) {
+    imgHtml = `<img src="${p.img}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'">`;
+  } else {
+    imgHtml = `<span style="font-size:100px">${p.img || '🛍️'}</span>`;
+  }
+  document.getElementById('modal-img').innerHTML =
+    imgHtml +
+    (p.badge ? `<span class="badge ${bc}" style="z-index:2">${p.badge}</span>` : '') +
+    (p.origPrice ? `<span class="modal-discount">-${Math.round((1-p.price/p.origPrice)*100)}%</span>` : '');
+
+  document.getElementById('modal-cat').textContent = p.brand + ' · ' + p.cat;
+  document.getElementById('modal-title').textContent = p.name;
+  document.getElementById('modal-price').textContent = '$' + p.price.toLocaleString() + ' MXN';
+  document.getElementById('modal-orig').textContent = p.origPrice ? '$' + p.origPrice.toLocaleString() : '';
+  document.getElementById('modal-desc').textContent = p.desc;
+
+  const sw = document.getElementById('modal-sizes-wrap');
+  if (p.sizes && p.sizes.length) {
+    sw.style.display = 'block';
+    document.getElementById('modal-sizes').innerHTML = p.sizes.map(s => `<span class="chip">${s}</span>`).join('');
+  } else sw.style.display = 'none';
+
+  const cw = document.getElementById('modal-colors-wrap');
+  if (p.colors && p.colors.length) {
+    cw.style.display = 'block';
+    document.getElementById('modal-colors').innerHTML = p.colors.map(c => `<span class="chip">${c}</span>`).join('');
+  } else cw.style.display = 'none';
+
+  document.getElementById('modal-stock-dot').className = 'stock-dot ' + (p.avail ? 'avail' : 'sold');
+  document.getElementById('modal-stock-text').textContent = p.avail
+    ? (p.stock > 0 ? p.stock + ' unidades disponibles' : 'Disponible')
+    : 'Agotado — ¿quieres que te avisemos?';
+
+  const wb = document.getElementById('modal-wa-btn');
+  wb.className = 'modal-wa-btn ' + (p.avail ? 'avail' : '');
+  wb.disabled = !p.avail;
+  document.getElementById('modal-wa-text').textContent = p.avail ? 'Quiero este → Contactar Agente' : 'Producto Agotado';
+  document.getElementById('product-modal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(e) {
+  if (e && e.target !== document.getElementById('product-modal')) return;
+  document.getElementById('product-modal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+function modalWA() {
+  if (!currentProduct || !currentProduct.avail) return;
+  const p = currentProduct;
+  openWA(`Hola! Vi el catálogo LUXE y me interesa: *${p.name}* ($${p.price.toLocaleString()} MXN). ¿Está disponible?`);
+}
+
+// ===== DASHBOARD =====
+function initDashboard() {
+  const days = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const months = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const d = new Date();
+  document.getElementById('dash-date').textContent = days[d.getDay()] + ', ' + d.getDate() + ' de ' + months[d.getMonth()] + ' ' + d.getFullYear();
+
+  // KPIs dinámicos desde stockList
+  const total = stockList.length;
+  const avail = stockList.filter(p => p.avail).length;
+  const cats = new Set(stockList.map(p => p.cat)).size;
+  const avgPrice = avail > 0
+    ? Math.round(stockList.filter(p=>p.avail).reduce((s,p)=>s+p.price,0) / avail)
+    : 0;
+  const agotados = stockList.filter(p => !p.avail).length;
+
+  document.getElementById('kpi-total').textContent = total;
+  document.getElementById('kpi-avail-sub').textContent = agotados + ' agotados';
+  document.getElementById('kpi-avail').textContent = avail;
+  document.getElementById('kpi-avail-pct').textContent = total > 0 ? Math.round(avail/total*100) + '% del catálogo' : '—';
+  document.getElementById('kpi-cats').textContent = cats;
+  document.getElementById('kpi-avg').textContent = avgPrice > 0 ? '$' + avgPrice.toLocaleString() : '—';
+
+  // Category bars
+  const catMap = {};
+  stockList.forEach(p => { catMap[p.cat] = (catMap[p.cat] || 0) + 1; });
+  const catArr = Object.entries(catMap).sort((a,b)=>b[1]-a[1]);
+  const maxCat = catArr[0]?.[1] || 1;
+  const catColors = ['#C9A84C','#a88730','#6b5520','#4a3a15','#2d240d','#1a1500'];
+  document.getElementById('cat-bars').innerHTML = catArr.map(([cat, count], i) => `
+    <div class="prod-bar-row" style="margin-bottom:10px">
+      <div class="prod-bar-info">
+        <div class="prod-bar-header">
+          <span class="prod-bar-name">${cat}</span>
+          <span class="prod-bar-stat">${count} producto${count!==1?'s':''}</span>
+        </div>
+        <div class="prod-bar-bg"><div class="prod-bar-fill" style="width:${(count/maxCat*100).toFixed(1)}%;background:${catColors[i]||'#333'}"></div></div>
+      </div>
+    </div>`).join('');
+
+  // Stock table
+  document.getElementById('stock-tbody').innerHTML = stockList.map(p => {
+    const sc = p.stock === 0 ? 'td-stock-red' : p.stock <= 3 ? 'td-stock-yellow' : 'td-stock-green';
+    const imgIcon = p.img && !p.img.startsWith('http') ? p.img : '🛍️';
+    return `<tr>
+      <td><div class="td-product"><span class="td-emoji">${imgIcon}</span><div><div class="td-name">${p.name}</div></div></div></td>
+      <td style="color:#a1a1aa">${p.brand}</td>
+      <td style="color:#a1a1aa">${p.cat}</td>
+      <td class="td-price">$${p.price.toLocaleString()}</td>
+      <td style="color:var(--text3)">${p.origPrice ? '$'+p.origPrice.toLocaleString() : '—'}</td>
+      <td class="${sc}">${p.stock}</td>
+      <td><span class="${p.avail?'td-avail-yes':'td-avail-no'}">${p.avail?'✓ SI':'✗ NO'}</span></td>
+      <td style="color:var(--text3);font-size:10px">${p.badge || '—'}</td>
+    </tr>`;
+  }).join('');
+
+  // Insights dinámicos
+  const lowStock = stockList.filter(p => p.avail && p.stock > 0 && p.stock <= 3);
+  const agotadosList = stockList.filter(p => !p.avail);
+  const withDiscount = stockList.filter(p => p.origPrice > 0);
+  let insights = '';
+  if (lowStock.length) insights += `<p class="insight"><span>Stock bajo:</span> ${lowStock.map(p=>p.name).join(', ')} — menos de 3 unidades. Considera reponer.</p>`;
+  if (agotadosList.length) insights += `<p class="insight"><span>Agotados (${agotadosList.length}):</span> ${agotadosList.map(p=>p.name).join(', ')}.</p>`;
+  if (withDiscount.length) insights += `<p class="insight"><span>${withDiscount.length} producto${withDiscount.length!==1?'s':''} en oferta</span> — buena estrategia para generar urgencia en redes.</p>`;
+  const topCat = catArr[0];
+  if (topCat) insights += `<p class="insight"><span>${topCat[0]}</span> es tu categoría más grande con ${topCat[1]} productos. Publícala primero en redes.</p>`;
+  if (!insights) insights = '<p class="insight">Agrega productos a tu Google Sheets para ver insights automáticos aquí.</p>';
+  document.getElementById('insights-content').innerHTML = insights;
+}
+
+// ===== INIT =====
+// Animate loader
+let pct = 0;
+const loaderInterval = setInterval(() => {
+  pct += 5;
+  document.getElementById('loader-fill').style.width = pct + '%';
+  if (pct >= 20) clearInterval(loaderInterval);
+}, 50);
+
+loadFromSheets();
+
+// Auto-refresh cada 5 minutos
+setInterval(loadFromSheets, 5 * 60 * 1000);
+</script>
+</body>
+</html>
