@@ -239,16 +239,10 @@
         <span class="logo-sep"></span>
         <span class="logo-sub">Premium Catalog</span>
       </div>
-      <div style="display:flex;align-items:center;gap:14px">
-        <div class="header-links">
-          <a href="https://instagram.com" target="_blank">Instagram</a>
-          <a href="https://tiktok.com" target="_blank">TikTok</a>
-          <a href="https://facebook.com" target="_blank">Facebook</a>
-        </div>
-        <div class="view-toggle">
-          <button class="active" onclick="showView('catalog')">Catálogo</button>
-          <button onclick="showView('dashboard')">Dashboard</button>
-        </div>
+      <div class="header-links">
+        <a href="https://instagram.com" target="_blank">Instagram</a>
+        <a href="https://tiktok.com" target="_blank">TikTok</a>
+        <a href="https://facebook.com" target="_blank">Facebook</a>
       </div>
     </div>
     <div class="cat-tabs" id="cat-tabs">
@@ -919,7 +913,7 @@ function initDashboard() {
   ];
   const maxSrc = Math.max(...sources.map(s=>bySource[s.key]||0), 1);
   const totalSrc = sources.reduce((a,s)=>a+(bySource[s.key]||0),0);
-  safeHTML('traffic-bars', sources.map(s=>`
+  const trafficHTML = sources.map(s=>`
     <div class="source-row">
       <div class="source-header">
         <span class="source-name">${s.name}</span>
@@ -928,11 +922,9 @@ function initDashboard() {
       <div class="source-bar-bg">
         <div class="source-bar-fill" style="width:${((bySource[s.key]||0)/maxSrc*100).toFixed(1)}%;background:${s.color}"></div>
       </div>
-    </div>`).join('') +
-    `<div class="source-total-row">
-      <p class="source-total-label">Total visitas registradas</p>
-      <p class="source-total-val">${totalSrc}</p>
-    </div>`;
+    </div>`).join('');
+  const trafficTotal = `<div class="source-total-row"><p class="source-total-label">Total visitas registradas</p><p class="source-total-val">${totalSrc}</p></div>`;
+  safeHTML('traffic-bars', trafficHTML + trafficTotal);
 
   // ── Links UTM para redes sociales ──────────────────────────
   const baseURL = window.location.origin + window.location.pathname;
