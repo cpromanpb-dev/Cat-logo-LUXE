@@ -480,7 +480,18 @@ function showView(v) {
   document.querySelectorAll('.view-toggle button').forEach((b, i) => {
     b.classList.toggle('active', (i===0&&v==='catalog')||(i===1&&v==='dashboard'));
   });
-  if (v === 'dashboard') initDashboard();
+  if (v === 'dashboard') {
+    const ok = sessionStorage.getItem('luxe-auth');
+    if (!ok) {
+      const pin = prompt('🔐 Dashboard protegido\nIngresa el PIN de acceso:');
+      if (pin !== 'morelia123') {
+        alert('PIN incorrecto. Acceso denegado.');
+        showView('catalog'); return;
+      }
+      sessionStorage.setItem('luxe-auth', '1');
+    }
+    initDashboard();
+  }
 }
 
 // ===== CATALOG =====
