@@ -307,7 +307,7 @@
   <div class="hero">
     <div class="hero-pattern"></div>
     <div class="hero-inner">
-      <div class="hero-tag">✦ Temporada 2025 ✦</div>
+      <div class="hero-tag">✦ Temporada 2026 ✦</div>
       <h1 class="hero-title">
         <span class="line1">NUEVA</span>
         <span class="line2">COLECCIÓN</span>
@@ -793,8 +793,9 @@ function renderGrid() {
     return '';
   };
   const getDiscount = (p) => {
-    if (!p.origPrice) return '';
-    const pct = Math.round((1 - p.price/p.origPrice)*100);
+    if (!p.origPrice || p.origPrice <= p.price) return '';
+    const pct = Math.round((1 - p.price / p.origPrice) * 100);
+    if (pct <= 0 || pct > 90) return ''; // evita % absurdos
     return `<span style="background:#ff4444;color:#fff;font-size:9px;font-weight:700;padding:2px 6px;margin-left:4px">-${pct}%</span>`;
   };
 
