@@ -217,6 +217,42 @@
   .refresh-btn{padding:5px 12px;border:1px solid var(--border);color:var(--text3);font-size:10px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .15s;background:none}
   .refresh-btn:hover{border-color:var(--gold);color:var(--gold)}
   .insights-card{background:var(--bg3);border:1px solid rgba(201,168,76,.2);padding:18px}
+
+  /* REFERIDOS */
+  .squad-section{background:linear-gradient(135deg,#0a0a0a 0%,#111 50%,#0d0d0d 100%);border:1px solid rgba(201,168,76,.3);padding:40px 24px;margin:0;text-align:center;position:relative;overflow:hidden}
+  .squad-section::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,rgba(201,168,76,.03) 0,rgba(201,168,76,.03) 1px,transparent 0,transparent 50%);background-size:20px 20px}
+  .squad-inner{position:relative;max-width:600px;margin:0 auto}
+  .squad-tag{display:inline-block;background:var(--gold);color:#000;font-size:9px;font-weight:900;letter-spacing:.3em;text-transform:uppercase;padding:4px 14px;margin-bottom:16px}
+  .squad-title{font-size:clamp(28px,6vw,48px);font-weight:900;color:#fff;margin-bottom:8px;letter-spacing:-.02em}
+  .squad-title span{color:var(--gold)}
+  .squad-sub{font-size:13px;color:var(--text2);margin-bottom:28px;line-height:1.6;max-width:420px;margin-left:auto;margin-right:auto}
+  .squad-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px;text-align:left}
+  @media(max-width:500px){.squad-steps{grid-template-columns:1fr}}
+  .squad-step{background:rgba(255,255,255,.04);border:1px solid rgba(201,168,76,.15);padding:14px}
+  .squad-step-num{font-size:22px;margin-bottom:6px}
+  .squad-step-title{font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
+  .squad-step-desc{font-size:11px;color:var(--text3);line-height:1.5}
+  .squad-levels{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:28px;text-align:left}
+  @media(min-width:640px){.squad-levels{grid-template-columns:repeat(4,1fr)}}
+  .squad-level{background:rgba(255,255,255,.03);border:1px solid var(--border);padding:12px}
+  .squad-level-icon{font-size:20px;margin-bottom:4px}
+  .squad-level-name{font-size:10px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.1em}
+  .squad-level-req{font-size:10px;color:var(--text3);margin:2px 0}
+  .squad-level-reward{font-size:12px;font-weight:700;color:#fff}
+  .squad-cta{display:inline-flex;align-items:center;gap:8px;background:var(--gold);color:#000;padding:14px 32px;font-size:12px;font-weight:900;letter-spacing:.15em;text-transform:uppercase;transition:all .15s;cursor:pointer;border:none}
+  .squad-cta:hover{background:var(--gold-dark);transform:translateY(-2px)}
+
+  /* DASH REFERIDOS */
+  .ref-toggle-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding:14px;background:var(--bg4);border:1px solid var(--border)}
+  .ref-toggle-label{font-size:13px;color:var(--text);font-weight:600}
+  .ref-toggle-sub{font-size:11px;color:var(--text3);margin-top:2px}
+  .big-toggle{position:relative;display:inline-block;width:52px;height:28px;cursor:pointer;flex-shrink:0}
+  .big-toggle input{opacity:0;width:0;height:0}
+  .big-toggle-slider{position:absolute;inset:0;background:#3f3f46;border-radius:14px;transition:.25s}
+  .big-toggle-slider:before{content:'';position:absolute;height:22px;width:22px;left:3px;bottom:3px;background:white;border-radius:50%;transition:.25s}
+  input:checked+.big-toggle-slider{background:var(--green)}
+  input:checked+.big-toggle-slider:before{transform:translateX(24px)}
+  .ref-table tbody tr:hover{background:rgba(201,168,76,.03)}
   .insights-title{font-size:10px;color:var(--gold);text-transform:uppercase;letter-spacing:.15em;margin-bottom:12px}
   .insight{font-size:13px;color:var(--text2);margin-bottom:8px;line-height:1.5}
   .insight span{color:var(--gold);font-weight:700}
@@ -335,6 +371,66 @@
 
   <div class="product-grid" id="product-grid">
     <div class="empty" style="grid-column:1/-1"><div class="empty-icon">⏳</div><p style="font-size:12px;letter-spacing:.1em">Cargando productos...</p></div>
+  </div>
+
+  <!-- LUXE SQUAD SECTION (controlado por dashboard) -->
+  <div id="squad-section" style="display:none">
+    <div class="squad-section">
+      <div class="squad-inner">
+        <div class="squad-tag">👑 LUXE Squad</div>
+        <h2 class="squad-title">RECOMIENDA<br><span>Y GANA</span></h2>
+        <p class="squad-sub">Comparte LUXE con tus amigos. Cuando compren usando tu código, tú ganas recompensas reales. Sin apps, sin complicaciones.</p>
+
+        <div class="squad-steps">
+          <div class="squad-step">
+            <div class="squad-step-num">1️⃣</div>
+            <div class="squad-step-title">Regístrate</div>
+            <div class="squad-step-desc">Escríbele a tu agente y pide tu código personal LUXE.</div>
+          </div>
+          <div class="squad-step">
+            <div class="squad-step-num">2️⃣</div>
+            <div class="squad-step-title">Comparte</div>
+            <div class="squad-step-desc">Envía tu código a amigos y familia que quieran comprar.</div>
+          </div>
+          <div class="squad-step">
+            <div class="squad-step-num">3️⃣</div>
+            <div class="squad-step-title">Gana</div>
+            <div class="squad-step-desc">Cuando confirmen su compra, tú acumulas tu recompensa.</div>
+          </div>
+        </div>
+
+        <div class="squad-levels">
+          <div class="squad-level">
+            <div class="squad-level-icon">🥉</div>
+            <div class="squad-level-name">Starter</div>
+            <div class="squad-level-req">1–4 ventas</div>
+            <div class="squad-level-reward">3% o mín $50</div>
+          </div>
+          <div class="squad-level">
+            <div class="squad-level-icon">🥈</div>
+            <div class="squad-level-name">Dealer</div>
+            <div class="squad-level-req">5–14 ventas</div>
+            <div class="squad-level-reward">5% o mín $80</div>
+          </div>
+          <div class="squad-level">
+            <div class="squad-level-icon">🥇</div>
+            <div class="squad-level-name">Elite</div>
+            <div class="squad-level-req">15–29 ventas</div>
+            <div class="squad-level-reward">7% o mín $120</div>
+          </div>
+          <div class="squad-level">
+            <div class="squad-level-icon">💎</div>
+            <div class="squad-level-name">Top LUXE</div>
+            <div class="squad-level-req">30+ ventas</div>
+            <div class="squad-level-reward">10% o mín $180</div>
+          </div>
+        </div>
+
+        <button class="squad-cta" onclick="openWA('👋 ¡Hola! Me interesa unirme al programa *LUXE Squad* y obtener mi código de referido. ¿Cómo funciona? 🙌')">
+          Quiero mi código → 💬
+        </button>
+      </div>
+    </div>
   </div>
 
   <a class="wa-float" href="#" onclick="return openWA('👋 ¡Hola! Vi el catálogo *LUXE* y me gustaría conocer más sobre sus productos y disponibilidad. ¿Me pueden ayudar? 🙌')" title="Contactar agente">
@@ -474,6 +570,60 @@
         <p class="insights-title">💡 Insights automáticos</p>
         <div id="insights-content"><p class="insight">Cargando análisis...</p></div>
       </div>
+
+      <!-- GESTIÓN LUXE SQUAD -->
+      <div class="stock-card" style="margin-top:20px;border-color:rgba(201,168,76,.25)">
+        <div style="margin-bottom:18px">
+          <p class="chart-title-sm">Programa de referidos</p>
+          <p class="chart-title" style="margin-bottom:4px">👑 LUXE Squad</p>
+        </div>
+
+        <!-- Toggle ON/OFF -->
+        <div class="ref-toggle-row">
+          <div>
+            <div class="ref-toggle-label">Mostrar programa en catálogo</div>
+            <div class="ref-toggle-sub">Actívalo en temporadas de campaña, desactívalo cuando quieras pausar</div>
+          </div>
+          <label class="big-toggle">
+            <input type="checkbox" id="squad-toggle" onchange="toggleSquad(this.checked)">
+            <span class="big-toggle-slider"></span>
+          </label>
+        </div>
+
+        <!-- Niveles editables -->
+        <p style="font-size:10px;color:var(--gold);text-transform:uppercase;letter-spacing:.15em;margin-bottom:12px">Niveles activos</p>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:18px" id="squad-levels-preview">
+          <div style="background:var(--bg4);border:1px solid var(--border);padding:10px">
+            <div style="font-size:10px;color:var(--text3)">🥉 Starter (1–4 ventas)</div>
+            <div style="font-size:13px;font-weight:700;color:var(--gold)">3% o mín $50 MXN</div>
+          </div>
+          <div style="background:var(--bg4);border:1px solid var(--border);padding:10px">
+            <div style="font-size:10px;color:var(--text3)">🥈 Dealer (5–14 ventas)</div>
+            <div style="font-size:13px;font-weight:700;color:var(--gold)">5% o mín $80 MXN</div>
+          </div>
+          <div style="background:var(--bg4);border:1px solid var(--border);padding:10px">
+            <div style="font-size:10px;color:var(--text3)">🥇 Elite (15–29 ventas)</div>
+            <div style="font-size:13px;font-weight:700;color:var(--gold)">7% o mín $120 MXN</div>
+          </div>
+          <div style="background:var(--bg4);border:1px solid var(--border);padding:10px">
+            <div style="font-size:10px;color:var(--text3)">💎 Top LUXE (30+ ventas)</div>
+            <div style="font-size:13px;font-weight:700;color:var(--gold)">10% o mín $180 MXN</div>
+          </div>
+        </div>
+
+        <!-- Tabla de referidores -->
+        <p style="font-size:10px;color:var(--gold);text-transform:uppercase;letter-spacing:.15em;margin-bottom:10px">Ranking de referidores</p>
+        <p style="font-size:11px;color:var(--text3);margin-bottom:12px">Agrega una hoja llamada <strong style="color:var(--text2)">referidos</strong> en tu Google Sheets con columnas: <em>codigo, nombre, ventas, monto_total</em></p>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>Código</th><th>Nombre</th><th>Ventas</th><th>Monto total</th><th>Nivel</th><th>Recompensa</th></tr></thead>
+            <tbody id="referidos-tbody">
+              <tr><td colspan="6" style="color:var(--text3);font-size:11px;padding:16px 0">Agrega datos en la hoja "referidos" de tu Sheets para verlos aquí</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -637,7 +787,7 @@ async function loadFromSheets() {
       name: r.nombre || r.name || 'Producto sin nombre',
       brand: r.marca || r.brand || 'LUXE',
       price: parseFloat((r.precio || r.price || '0').replace(/[^0-9.]/g,'')) || 0,
-      origPrice: parseFloat((r.precio_original || r.original_price || '').replace(/[^0-9.]/g,'')) || 0,
+      origPrice: (function(v){ v=String(v||'').replace(/,(?=\d{3})/g,'').replace(/[^0-9.]/g,''); return parseFloat(v)||0; })(r.precio_original || r.original_price),
       cat: r.categoria || r.category || 'General',
       stock: parseInt(r.stock || '0') || 0,
       avail: (r.disponible || r.available || 'SI').toUpperCase() === 'SI',
@@ -852,7 +1002,7 @@ function openModal(id) {
   document.getElementById('modal-img').innerHTML =
     imgHtml +
     (p.badge ? `<span class="badge ${bc}" style="z-index:2">${p.badge}</span>` : '') +
-    (p.origPrice ? `<span class="modal-discount">-${Math.round((1-p.price/p.origPrice)*100)}%</span>` : '');
+    (p.origPrice && p.origPrice > p.price ? `<span class="modal-discount">-${Math.round((1-p.price/p.origPrice)*100)}%</span>` : '');
 
   document.getElementById('modal-cat').textContent = p.brand + ' · ' + p.cat;
   document.getElementById('modal-title').textContent = p.name;
@@ -1092,6 +1242,22 @@ function copyLink(url) {
   });
 }
 
+// ===== LUXE SQUAD =====
+function toggleSquad(active) {
+  localStorage.setItem('squad-active', active ? '1' : '0');
+  const section = document.getElementById('squad-section');
+  if (section) section.style.display = active ? 'block' : 'none';
+}
+
+function initSquadState() {
+  const saved = localStorage.getItem('squad-active');
+  const active = saved === '1';
+  const toggle = document.getElementById('squad-toggle');
+  if (toggle) toggle.checked = active;
+  const section = document.getElementById('squad-section');
+  if (section) section.style.display = active ? 'block' : 'none';
+}
+
 // ===== INIT =====
 // Animate loader
 let pct = 0;
@@ -1128,6 +1294,7 @@ const loaderInterval = setInterval(() => {
 })();
 
 loadFromSheets();
+initSquadState();
 
 // Auto-refresh cada 5 minutos
 setInterval(loadFromSheets, 5 * 60 * 1000);
